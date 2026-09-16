@@ -97,9 +97,8 @@ detection-lab`.
 
 ## Scope
 
-This is a reference implementation sized to be read end to end in one
-sitting. Two detection scenarios.. one
+This is a reference implementation with 2 detection scenarios.. one
 detection engine by default  and one cluster provider exercised in CI. The
 patterns (rules as code, synthetic attack simulation as a CI step,
-detection coverage as a merge gate) are the part meant to generalize(not
+detection coverage as a merge gate)are the part meant to generalize(not
 the specific rule count.)
