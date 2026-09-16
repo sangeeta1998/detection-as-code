@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lab-target
+  labels:
+    app.kubernetes.io/part-of: detection-as-code-lab
+    # This namespace holds the workloads being *observed*, so it stays
+    # under the normal restricted Pod Security Standard. Only the
+    # detection-lab namespace (Falco/Tetragon) needs elevated access.
+    pod-security.kubernetes.io/enforce: restricted

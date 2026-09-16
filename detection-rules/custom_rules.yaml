@@ -1,0 +1,48 @@
+# Extra Falco rules layered on top of the chart's default rule set via the
+###`customRules` values key (see terraform/falco.tf). These two rules are
+#what tests/validate_alerts.py checks fired after each attack simulation.
+#
+#Written as generic MITRE ATT&CK mapped detection and  not tied to any
+# specific project's rule set. Suspicious network shell and mass file
+#write/rename-under-time-pressure are two of the most common starting
+#points for reverse shell and ransomware detection respectively
+
+customRules:
+  lab_rules.yaml: |-
+    - rule: Lab - Unexpected Outbound Shell
+      desc: >
+        A shell process opened an outbound network connection from inside a
+        container. Legitimate containers in this lab never do this, so this
+        stands in for reverse-shell style behaviour.
+        MITRE ATT&CK: T1059 (Command and Scripting Interpreter), T1071 (Application Layer Protocol)
+      condition: >
+        spawned_process
+        and proc.name in (sh, bash, dash, ash)
+        and container
+        and fd.type = ipv4
+        and evt.type = connect
+        and evt.dir = <
+      output: >
+        Lab alert: shell process made outbound connection
+        (command=%proc.cmdline connection=%fd.name container=%container.name image=%container.image.repository)
+      priority: WARNING
+      source: syscall
+      tags: [lab, network, mitre_t1059, mitre_t1071]
+
+    - rule: Lab - Rapid File Rewrite Burst
+      desc: >
+        A process rewrote a high number of files under a watched directory
+        in a short window, the file-I/O pattern this lab uses to stand in
+        for ransomware-style bulk encryption, without shipping or executing
+        any real ransomware code.
+        MITRE ATT&CK: T1486 (Data Encrypted for Impact)
+      condition: >
+        open_write
+        and container
+        and fd.directory = /data/lab-watched
+      output: >
+        Lab alert: rapid file rewrite under watched directory
+        (file=%fd.name command=%proc.cmdline container=%container.name)
+      priority: WARNING
+      source: syscall
+      tags: [lab, filesystem, mitre_t1486]
